@@ -126,3 +126,28 @@ xdg-utils
 xfsprogs
 xl2tpd
 zsh
+
+
+##### ZephyrOS Packages #####
+
+### Calamares Install ###
+
+boost-libs
+qt5-base
+qt6-base
+
+### Others
+
+kpmcore
+boost
+yaml-cpp
+python
+hwinfo
+squashfs-tools
+libpwquality
+efibootmgr
+networkmanager
+xf86-video-vesa
+xorg-server
+plasma-desktop
+sddm
