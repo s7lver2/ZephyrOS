@@ -151,3 +151,6 @@ xf86-video-vesa
 xorg-server
 plasma-desktop
 sddm
+make
+
+kitty
