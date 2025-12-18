@@ -2,7 +2,7 @@
 Zephyr OS is an arch-based operative system designed for productivity and training
 
 <!-- BANNER:START -->
-<!-- ![bat_generator_banner](.github/ISSUE_TEMPLATE/animesher.com_pixel-pixel-gif-gif-2066449.gif) -->
+![bat_generator_banner](.github/8x02f03d7pb11.gif)
 <!-- BANNER:END -->
 
 <!-- ALL-CONTRIBUTORS-BADGE:START - Do not remove or modify this section -->
