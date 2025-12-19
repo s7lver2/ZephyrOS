@@ -39,3 +39,6 @@ Tan solo tienes que quemar la iso en una usb, o cargarla en una maquina virtual.
 > [!IMPORTANT]
 > TODO
 ---
+
+
+# PENDING TO ADD Pulseaudio, cutefish-cursors-theme-git PACKAGE

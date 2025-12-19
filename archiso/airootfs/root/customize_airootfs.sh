@@ -1,8 +1,3 @@
-systemctl set-default graphical.target
-
-systemctl enable sddm.service
-systemctl enable NetworkManager.service
-
 ## Sudoers File Configuration
 mkdir -p /etc/sudoers.d
 
@@ -20,25 +15,5 @@ passwd -d archlive
 cp -r /etc/skel/. /home/archlive
 chown -R archlive:archlive /home/archlive
 
-## yay helper install
-sudo -u archlive bash<<'EOF'
-set -e
-rm -rf yay
-cd /tmp
-git clone https://aur.archlinux.org/yay.git
-cd yay 
-makepkg -fsir --noconfirm --needed
-sudo mv yay /usr/local/bin/yay
-chmod 755 /usr/local/bin/yay
-cd /
-rm -rf /tmp/yay
-
-yay --version
-EOF
-
-## calamares install
-pacman -Sy --noconfirm
-yay -S --noconfirm calamares
-
-## Cleaning Process
-pacman -Sc --noconfirm
+## Install Packages
+pacman -U --noconfirm /root/packages/*.pkg.tar.zst
