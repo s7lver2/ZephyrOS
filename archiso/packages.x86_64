@@ -154,6 +154,9 @@ xf86-video-vesa
 xorg-server
 plasma-desktop
 sddm
-make
 
+# utilities
 kitty
+vim
+nano
+neofetch
