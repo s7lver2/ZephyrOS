@@ -1,2 +1,9 @@
 /output
 /work
+/test
+/archiso/airootfs/etc/calamares/qml
+/archiso/airootfs/usr/local/lib/calamares-libs
+/archiso/airootfs/usr/local/lib/calamares/modules
+/archiso/airootfs/usr/local/bin/calamares
+/out
+/temp

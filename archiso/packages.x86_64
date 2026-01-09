@@ -153,10 +153,16 @@ networkmanager
 xf86-video-vesa
 xorg-server
 plasma-desktop
+plasma
 sddm
+sddm-kcm
+qt5-graphicaleffects
+qt6-5compat
+# plasma-wallpapers
 
 # utilities
 kitty
 vim
 nano
-neofetch
+git
+zsh

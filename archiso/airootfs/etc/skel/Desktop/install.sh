@@ -1,2 +1,2 @@
 #!/bin/bash
-calamares -d
+sudo calamares --config /etc/calamares -d

@@ -39,3 +39,7 @@ Tan solo tienes que quemar la iso en una usb, o cargarla en una maquina virtual.
 > [!IMPORTANT]
 > TODO
 ---
+
+moe themes
+volantes cursors
+sugar candy sddm
