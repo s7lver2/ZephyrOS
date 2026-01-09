@@ -1,0 +1,10 @@
+#!/usr/bin/env bash
+
+# Ensure Dependences
+echo "Making sure dependences are installed"
+
+sudo pacman -Suy --noconfirm
+sudo pacman -S git base-devel --noconfirm
+
+
+echo "[+] yay is not required for the installation"
