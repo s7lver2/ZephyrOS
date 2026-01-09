@@ -6,20 +6,26 @@ ARCHISO_TEMP_DIR="$TEMP_DIR/airootfs"
 AIROOTFS="archiso/airootfs"
 ISO_OUTPUT_DIR="out"
 ARCHISO_PROFILE_DIR="archiso"
-COMPILATION_CORES=$(nproc)
+COMPILATION_CORES=8
 
 ## CALAMARES CONFIG
 
 CALAMARES_REPO='https://codeberg.org/Calamares/calamares.git'
 CALAMARES_DIR="$TEMP_DIR/calamares"
-CALAMARES_BUILD_DIR="$CALAMARES_DIR/build"
+CALAMARES_BUILD_DIR="/build"
 CALAMARES_LIB_DIRECTORY="$AIROOTFS/usr/local/lib/calamares-libs"
 CALAMARES_BIN_DIRECTORY="$AIROOTFS/usr/local/bin/"
 CALAMARES_MODULES_DIRECTORY="$AIROOTFS/usr/local/lib/calamares/modules"
 
+install_dependences_for_compilation() {
+    echo "Installing dependences for compilation"
+
+    sudo pacman -S --noconfirm --needed base-devel git cmake extra-cmake-modules qt6-base qt6-svg qt6-tools qt6-declarative qt6-multimedia qt6-speech kcoreaddons kconfig kiconthemes ki18n kio solid kpmcore yaml-cpp boost boost-libs polkit-qt6 hwinfo libpwquality icu efibootmgr archiso
+}
+
 compile_calamares() {
-    if [ -d "$CALAMARES_BUILD_DIR" ] && [ -f "$CALAMARES_BUILD_DIR/calamares" ]; then
-        echo "Calamares detected in $CALAMARES_BUILD_DIR, skipping compilation"
+    if [ -d "$CALAMARES_DIR/build" ] && [ -f "$CALAMARES_DIR/build/calamares" ]; then
+        echo "Calamares detected in $CALAMARES_DIR/build, skipping compilation"
         return 0
     fi
 
@@ -34,24 +40,20 @@ compile_calamares() {
     cd $CALAMARES_DIR
     git pull # update repo if it exist
 
-    mkdir -p "$CALAMARES_BUILD_DIR"
-    cd "$CALAMARES_BUILD_DIR"
+    # remove earlier build directories
+    rm -rf "build"
+
+    mkdir -p "build"
+    cd "build"
+
 
     # configure and compile 
     cmake .. -DCMAKE_BUILD_TYPE=Release
     make -j$COMPILATION_CORES
+    sudo make install DESTDIR="../../../$AIROOTFS"
 
-    echo "Calamares compilation completed in $CALAMARES_BUILD_DIR"
-    cd ../../..
-}
-
-install_calamares_to_airootfs() {
-    echo "Moving Calamares files into $AIROOTFS..."
-
-    cd "$CALAMARES_BUILD_DIR"
-    sudo make install DESTDIR="$PWD../../../$AIROOTFS"
-
-    cd ../../..
+    #echo "Calamares compilation completed in $CALAMARES_BUILD_DIR"
+    #cd ../../..
 }
 
 build_iso() {
@@ -70,8 +72,8 @@ build_iso() {
     echo "ISO file created in $ISO_OUTPUT_DIR/$(ls $ISO_OUTPUT_DIR/*.iso)"
 }
 
-# compile_calamares
-# install_calamares_to_airootfs
+install_dependences_for_compilation
+compile_calamares
 build_iso
 
 echo "Process sucessfully completed! enjoy your system"
