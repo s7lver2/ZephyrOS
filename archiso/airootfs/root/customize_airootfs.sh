@@ -17,6 +17,7 @@ chmod 440 /etc/sudoers.d/10-wheel-nopasswd
 cp -r /usr/local/lib/calamares-libs/* /usr/lib/
 
 chmod +x /usr/local/bin/*
+chmod +x /usr/local/calamares
 
 ## sddm config
 mkdir -p /usr/share/sddm/themes
