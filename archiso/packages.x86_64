@@ -145,6 +145,7 @@ kpmcore
 boost
 yaml-cpp
 python
+python3
 hwinfo
 squashfs-tools
 libpwquality
