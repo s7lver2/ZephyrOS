@@ -24,6 +24,5 @@ calamares-python.mo
 /kernel/linux-zephyr/*.zst
 /kernel/linux-zephyr/*.zst.sig
 /kernel/linux-zephyr/src
-/kernel
 /ZephyrOS
 /packages/x86_64/linux*
