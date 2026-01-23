@@ -19,23 +19,52 @@ CALAMARES_LIB_DIRECTORY="$AIROOTFS/usr/local/lib/calamares-libs"
 CALAMARES_BIN_DIRECTORY="$AIROOTFS/usr/local/bin/"
 CALAMARES_MODULES_DIRECTORY="$AIROOTFS/usr/local/lib/calamares/modules"
 
+remove_temp_dirs() {
+    sudo rm -rf temp/airootfs
+}
+
 install_dependences_for_compilation() {
-    echo "Installing dependences for compilation"
+    echo '[DEPINS] Installing dependences for compilation'
     sudo pacman -S --noconfirm --needed base-devel git cmake extra-cmake-modules \
         qt6-base qt6-svg qt6-tools qt6-declarative qt6-multimedia qt6-speech \
         kcoreaddons kconfig kiconthemes ki18n kio solid kpmcore yaml-cpp boost \
         boost-libs polkit-qt6 hwinfo libpwquality icu efibootmgr archiso clang \
-        llvm lld
+        llvm lld devtools pacman-contrib archlinux-keyring
 
+    echo '[DEPINS] Dependences Installed Sucessfully'
+}
+
+build_kernel() {
+    echo "[MAIN] Step 2/5 compilating kernel"
+
+    echo "[KERNEL] Downloading keys..."
+    cd kernel/linux
+
+    sudo pacman-key --init
+    sudo pacman-key --populate archlinux
+
+    gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys 38DBBDC86092693E
+    gpg --keyserver hkps://keys.openpgp.org --recv-keys B8AC08600F108CDF
+    updpkgsums
+
+    echo "[KERNEL] Kernel Compilation In Progress..."
+    MAKEFLAGS="-j$COMPILATION_CORES" makepkg -s
+
+    echo "[KERNEL] Copying kernel files..."
+    cp -r *.pkg.tar.zst ../../packages/x86_64/
+    repo-add ../../packages/x86_64/Zephyr-core.db.tar.xz ../../packages/x86_64/*.pkg.tar.zst 
+
+    echo "[KERNEL] Kernel Compiled Sucessfully"
 }
 
 compile_calamares() {
+    echo "[MAIN] Step 3/5 Compilating Calamares"
     if [ -d "$CALAMARES_DIR/build" ] && [ -f "$CALAMARES_DIR/build/calamares" ]; then
-        echo "Calamares detected in $CALAMARES_DIR/build, skipping compilation"
+        echo "[CALAM] Calamares detected in $CALAMARES_DIR/build, skipping compilation"
         return 0
     fi
 
-    echo "Compilating calamares from source..."
+    echo "[CALAM] Downloading calamares source code..."
 
     # clone repo if doesnt exist
 
@@ -52,6 +81,7 @@ compile_calamares() {
     mkdir -p "build"
     cd "build"
 
+    echo "[CALAM] Compilating calamares from source..."
 
     # configure and compile 
     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DQT_DEFAULT_MAJOR_VERSION=6 -DSKIP_MODULES=" plasmanetinstall webview interactiveterminalweb"
@@ -59,6 +89,8 @@ compile_calamares() {
     sudo make install DESTDIR="../../../$AIROOTFS"
 
     # copy custom scripts and modules
+
+    echo "[CALAM] Copying custom scripts and modules..."
     cd ../../../
     sudo cp -r temp/calamares/build/src/qml archiso/airootfs/etc/calamares
 
@@ -73,6 +105,18 @@ compile_calamares() {
     echo "Calamares compilation completed in $CALAMARES_DIR"
 }
 
+compile_zephyr_apps() {
+    echo "compilating zephyr apps"
+
+    cd $TEMP_DIR
+    git clone https://github.com/s7lver2/zephyr-theme-patcher
+    git clone https://github.com/s7lver2/zephyr-theme-installer
+
+    ### packages compilation ###
+
+    echo "compilation sucessfull"
+}
+
 build_iso() {
     echo "Setting up Archiso Profile..."
 
@@ -81,10 +125,10 @@ build_iso() {
     sudo rm -rf $ISO_OUTPUT_DIR
     mkdir -p $ARCHISO_TEMP_DIR
     mkdir -p $ISO_OUTPUT_DIR
-
+    
     # run mkarchiso with our config
 
-    sudo mkarchiso -v -w "$ARCHISO_TEMP_DIR" -o "$ISO_OUTPUT_DIR" "$ARCHISO_PROFILE_DIR"
+    sudo mkarchiso -v -w "$ARCHISO_TEMP_DIR" -o "$ISO_OUTPUT_DIR" "$ARCHISO_PROFILE_DIR" -C "$ARCHISO_PROFILE_DIR/pacman.conf"
 
     echo "ISO file created in $ISO_OUTPUT_DIR/$(ls $ISO_OUTPUT_DIR/*.iso)"
 }
@@ -146,9 +190,11 @@ burn_iso_to_usb() {
     echo "Writing sucessfully completed!"
 }
 
-
+remove_temp_dirs
+#build_kernel
 install_dependences_for_compilation
 compile_calamares
+compile_zephyr_apps
 build_iso
 
 if [[ $# -eq 1 ]]; then

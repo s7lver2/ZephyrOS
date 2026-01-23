@@ -50,6 +50,8 @@ lftp
 libfido2
 libusb-compat
 linux
+linux-docs
+linux-headers
 linux-atm
 linux-firmware
 linux-firmware-marvell
@@ -138,6 +140,7 @@ qt5-base
 git
 base-devel
 qt6-base
+plymouth
 
 ### Others
 

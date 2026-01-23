@@ -19,3 +19,10 @@ calamares-python.mo
 /archiso/airootfs/usr/share/polkit-1/actions/io.calamares.calamares.policy
 /out
 /temp
+/kernel/linux/*.tar.sign
+/kernel/linux/*.tar.xz
+/kernel/linux/*.zst
+/kernel/linux/*.zst.sig
+/kernel/linux/src
+/ZephyrOS
+/packages/x86_64/linux*
