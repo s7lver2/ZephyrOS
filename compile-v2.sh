@@ -20,7 +20,7 @@ CALAMARES_BIN_DIRECTORY="$AIROOTFS/usr/local/bin/"
 CALAMARES_MODULES_DIRECTORY="$AIROOTFS/usr/local/lib/calamares/modules"
 
 remove_temp_dirs() {
-    sudo rm -rf temp/airootfs
+    sudo rm -rf temp/airootfs temp/file-meet
 }
 
 install_dependences_for_compilation() {
@@ -29,16 +29,19 @@ install_dependences_for_compilation() {
         qt6-base qt6-svg qt6-tools qt6-declarative qt6-multimedia qt6-speech \
         kcoreaddons kconfig kiconthemes ki18n kio solid kpmcore yaml-cpp boost \
         boost-libs polkit-qt6 hwinfo libpwquality icu efibootmgr archiso clang \
-        llvm lld devtools pacman-contrib archlinux-keyring
+        llvm lld devtools pacman-contrib archlinux-keyring go
 
     echo '[DEPINS] Dependences Installed Sucessfully'
 }
 
 build_kernel() {
     echo "[MAIN] Step 2/5 compilating kernel"
+    echo "[KERNEL] Copying files..."
+    mkdir -p $TEMP_DIR/kernel
+    cp -r kernel/linux-zephyr/. $TEMP_DIR/kernel
 
     echo "[KERNEL] Downloading keys..."
-    cd kernel/linux
+    cd $TEMP_DIR/kernel
 
     sudo pacman-key --init
     sudo pacman-key --populate archlinux
@@ -106,15 +109,27 @@ compile_calamares() {
 }
 
 compile_zephyr_apps() {
-    echo "compilating zephyr apps"
+    echo "[MAIN] Step 4/5 Compilating Zephyr-Default-Apps"
+    echo "[ZAPPS] downloading zephyr apps"
 
     cd $TEMP_DIR
-    git clone https://github.com/s7lver2/zephyr-theme-patcher
-    git clone https://github.com/s7lver2/zephyr-theme-installer
-
+    #git clone https://github.com/s7lver2/zephyr-theme-patcher
+    #git clone https://github.com/s7lver2/zephyr-theme-installer
+    git clone https://github.com/s7lver2/file-meet
     ### packages compilation ###
 
-    echo "compilation sucessfull"
+    echo "[ZAPPS] compilating Zephyr-Default-Apps"
+
+    cd file-meet
+    chmod +x install.sh
+    ./install.sh --zephyros-source-build
+    cd ../..
+
+    echo "[ZAPPS] moving required files to directory"
+    mkdir -p $AIROOTFS/usr/share/zephyr-apps/meet
+    cp $TEMP_DIR/file-meet/meet $AIROOTFS/usr/share/zephyr-apps/meet/meet
+    cp $TEMP_DIR/file-meet/meet-backend $AIROOTFS/usr/share/zephyr-apps/meet/meet-backend
+    cp $TEMP_DIR/file-meet/meet.service $AIROOTFS/usr/share/zephyr-apps/meet/meet.service
 }
 
 build_iso() {
@@ -204,9 +219,7 @@ else
     echo
     echo "Not parameter in execution assigned"
     echo "skipping usb writing"
-    echo "ISO reeady in: $ISO_OUTPUT_DIR/"
-    ec[sudo] password for s7lver: 
-󰣇 ~/Projects/ZephyrOS   fix-bugs-1  !?⇡1 ❯                                                                                                              14:43 ho
+    echo "ISO reeady in: $ISO_OUTPUT_DIR/"                                                                                                              14:43 ho
 fi
 
 echo 'Process sucessfully completed! enjoy your system'
