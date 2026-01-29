@@ -26,3 +26,4 @@ calamares-python.mo
 /kernel/linux-zephyr/src
 /ZephyrOS
 /packages/x86_64/linux*
+/archiso/airootfs/usr/local/share/zephyr-apps/

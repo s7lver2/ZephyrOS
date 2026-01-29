@@ -20,7 +20,7 @@ CALAMARES_BIN_DIRECTORY="$AIROOTFS/usr/local/bin/"
 CALAMARES_MODULES_DIRECTORY="$AIROOTFS/usr/local/lib/calamares/modules"
 
 remove_temp_dirs() {
-    sudo rm -rf temp/airootfs temp/file-meet
+    sudo rm -rf temp/airootfs temp/file-meet temp/zephyr-theme-patcher temp/zephyr-themes
 }
 
 install_dependences_for_compilation() {
@@ -57,6 +57,7 @@ build_kernel() {
     cp -r *.pkg.tar.zst ../../packages/x86_64/
     repo-add ../../packages/x86_64/Zephyr-core.db.tar.xz ../../packages/x86_64/*.pkg.tar.zst 
 
+    cd ../../
     echo "[KERNEL] Kernel Compiled Sucessfully"
 }
 
@@ -113,23 +114,42 @@ compile_zephyr_apps() {
     echo "[ZAPPS] downloading zephyr apps"
 
     cd $TEMP_DIR
-    #git clone https://github.com/s7lver2/zephyr-theme-patcher
-    #git clone https://github.com/s7lver2/zephyr-theme-installer
+    git clone https://github.com/s7lver2/zephyr-theme-patcher
+    git clone https://github.com/s7lver2/zephyr-themes
     git clone https://github.com/s7lver2/file-meet
     ### packages compilation ###
 
-    echo "[ZAPPS] compilating Zephyr-Default-Apps"
+    echo "[ZAPPS] compilating meet"
 
     cd file-meet
     chmod +x install.sh
     ./install.sh --zephyros-source-build
-    cd ../..
+    cd ../../
 
     echo "[ZAPPS] moving required files to directory"
-    mkdir -p $AIROOTFS/usr/share/zephyr-apps/meet
-    cp $TEMP_DIR/file-meet/meet $AIROOTFS/usr/share/zephyr-apps/meet/meet
-    cp $TEMP_DIR/file-meet/meet-backend $AIROOTFS/usr/share/zephyr-apps/meet/meet-backend
-    cp $TEMP_DIR/file-meet/meet.service $AIROOTFS/usr/share/zephyr-apps/meet/meet.service
+    mkdir -p $AIROOTFS/usr/local/share/zephyr-apps/meet
+    cp $TEMP_DIR/file-meet/meet $AIROOTFS/usr/local/share/zephyr-apps/meet/meet
+    cp $TEMP_DIR/file-meet/meet-backend $AIROOTFS/usr/local/share/zephyr-apps/meet/meet-backend
+    cp $TEMP_DIR/file-meet/meet.service $AIROOTFS/usr/local/share/zephyr-apps/meet/meet.service
+    cp $TEMP_DIR/file-meet/default.config.toml $AIROOTFS/usr/local/share/zephyr-apps/meet/default.config.toml
+
+    echo "[ZAPPS] compilating zephyr-theme-patcher"
+    cd $TEMP_DIR/zephyr-theme-patcher
+    chmod +x install.sh
+    ./install.sh --zephyros-source-build
+    cd ../..
+    pwd
+
+    echo "[ZAPPS] moving required files to directory"
+    mkdir -p $AIROOTFS/usr/local/share/zephyr-apps/zephyr-theme-patcher
+    cp $TEMP_DIR/zephyr-theme-patcher/zephyr-theme-patcher $AIROOTFS/usr/local/share/zephyr-apps/zephyr-theme-patcher/zephyrthemepatcher
+    cp $TEMP_DIR/zephyr-theme-patcher/default.config.toml $AIROOTFS/usr/local/share/zephyr-apps/zephyr-theme-patcher/default.config.toml
+
+    echo "[ZAPPS] compilating zephyr-themes to directory"
+    mkdir -p $AIROOTFS/usr/local/share/zephyr-apps/zephyr-themes
+    sudo cp -r $TEMP_DIR/zephyr-themes/ $AIROOTFS/usr/local/share/zephyr-apps/
+    echo "[ZAPPS] zephyr apps compilated sucessfully"
+    
 }
 
 build_iso() {
@@ -206,8 +226,8 @@ burn_iso_to_usb() {
 }
 
 remove_temp_dirs
+#install_dependences_for_compilation
 #build_kernel
-install_dependences_for_compilation
 compile_calamares
 compile_zephyr_apps
 build_iso
