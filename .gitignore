@@ -19,3 +19,11 @@ calamares-python.mo
 /archiso/airootfs/usr/share/polkit-1/actions/io.calamares.calamares.policy
 /out
 /temp
+/kernel/linux-zephyr/*.tar.sign
+/kernel/linux-zephyr/*.tar.xz
+/kernel/linux-zephyr/*.zst
+/kernel/linux-zephyr/*.zst.sig
+/kernel/linux-zephyr/src
+/ZephyrOS
+/packages/x86_64/linux*
+/archiso/airootfs/usr/local/share/zephyr-apps/

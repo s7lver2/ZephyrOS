@@ -19,23 +19,56 @@ CALAMARES_LIB_DIRECTORY="$AIROOTFS/usr/local/lib/calamares-libs"
 CALAMARES_BIN_DIRECTORY="$AIROOTFS/usr/local/bin/"
 CALAMARES_MODULES_DIRECTORY="$AIROOTFS/usr/local/lib/calamares/modules"
 
+remove_temp_dirs() {
+    sudo rm -rf temp/airootfs temp/file-meet temp/zephyr-theme-patcher temp/zephyr-themes
+}
+
 install_dependences_for_compilation() {
-    echo "Installing dependences for compilation"
+    echo '[DEPINS] Installing dependences for compilation'
     sudo pacman -S --noconfirm --needed base-devel git cmake extra-cmake-modules \
         qt6-base qt6-svg qt6-tools qt6-declarative qt6-multimedia qt6-speech \
         kcoreaddons kconfig kiconthemes ki18n kio solid kpmcore yaml-cpp boost \
         boost-libs polkit-qt6 hwinfo libpwquality icu efibootmgr archiso clang \
-        llvm lld
+        llvm lld devtools pacman-contrib archlinux-keyring go
 
+    echo '[DEPINS] Dependences Installed Sucessfully'
+}
+
+build_kernel() {
+    echo "[MAIN] Step 2/5 compilating kernel"
+    echo "[KERNEL] Copying files..."
+    mkdir -p $TEMP_DIR/kernel
+    cp -r kernel/linux-zephyr/. $TEMP_DIR/kernel
+
+    echo "[KERNEL] Downloading keys..."
+    cd $TEMP_DIR/kernel
+
+    sudo pacman-key --init
+    sudo pacman-key --populate archlinux
+
+    gpg --keyserver hkps://keyserver.ubuntu.com --recv-keys 38DBBDC86092693E
+    gpg --keyserver hkps://keys.openpgp.org --recv-keys B8AC08600F108CDF
+    updpkgsums
+
+    echo "[KERNEL] Kernel Compilation In Progress..."
+    MAKEFLAGS="-j$COMPILATION_CORES" makepkg -s
+
+    echo "[KERNEL] Copying kernel files..."
+    cp -r *.pkg.tar.zst ../../packages/x86_64/
+    repo-add ../../packages/x86_64/Zephyr-core.db.tar.xz ../../packages/x86_64/*.pkg.tar.zst 
+
+    cd ../../
+    echo "[KERNEL] Kernel Compiled Sucessfully"
 }
 
 compile_calamares() {
+    echo "[MAIN] Step 3/5 Compilating Calamares"
     if [ -d "$CALAMARES_DIR/build" ] && [ -f "$CALAMARES_DIR/build/calamares" ]; then
-        echo "Calamares detected in $CALAMARES_DIR/build, skipping compilation"
+        echo "[CALAM] Calamares detected in $CALAMARES_DIR/build, skipping compilation"
         return 0
     fi
 
-    echo "Compilating calamares from source..."
+    echo "[CALAM] Downloading calamares source code..."
 
     # clone repo if doesnt exist
 
@@ -52,6 +85,7 @@ compile_calamares() {
     mkdir -p "build"
     cd "build"
 
+    echo "[CALAM] Compilating calamares from source..."
 
     # configure and compile 
     cmake .. -DCMAKE_BUILD_TYPE=Release -DCMAKE_CXX_COMPILER=clang++ -DCMAKE_C_COMPILER=clang -DQT_DEFAULT_MAJOR_VERSION=6 -DSKIP_MODULES=" plasmanetinstall webview interactiveterminalweb"
@@ -59,6 +93,8 @@ compile_calamares() {
     sudo make install DESTDIR="../../../$AIROOTFS"
 
     # copy custom scripts and modules
+
+    echo "[CALAM] Copying custom scripts and modules..."
     cd ../../../
     sudo cp -r temp/calamares/build/src/qml archiso/airootfs/etc/calamares
 
@@ -73,6 +109,49 @@ compile_calamares() {
     echo "Calamares compilation completed in $CALAMARES_DIR"
 }
 
+compile_zephyr_apps() {
+    echo "[MAIN] Step 4/5 Compilating Zephyr-Default-Apps"
+    echo "[ZAPPS] downloading zephyr apps"
+
+    cd $TEMP_DIR
+    git clone https://github.com/s7lver2/zephyr-theme-patcher
+    git clone https://github.com/s7lver2/zephyr-themes
+    git clone https://github.com/s7lver2/file-meet
+    ### packages compilation ###
+
+    echo "[ZAPPS] compilating meet"
+
+    cd file-meet
+    chmod +x install.sh
+    ./install.sh --zephyros-source-build
+    cd ../../
+
+    echo "[ZAPPS] moving required files to directory"
+    mkdir -p $AIROOTFS/usr/local/share/zephyr-apps/meet
+    cp $TEMP_DIR/file-meet/meet $AIROOTFS/usr/local/share/zephyr-apps/meet/meet
+    cp $TEMP_DIR/file-meet/meet-backend $AIROOTFS/usr/local/share/zephyr-apps/meet/meet-backend
+    cp $TEMP_DIR/file-meet/meet.service $AIROOTFS/usr/local/share/zephyr-apps/meet/meet.service
+    cp $TEMP_DIR/file-meet/default.config.toml $AIROOTFS/usr/local/share/zephyr-apps/meet/default.config.toml
+
+    echo "[ZAPPS] compilating zephyr-theme-patcher"
+    cd $TEMP_DIR/zephyr-theme-patcher
+    chmod +x install.sh
+    ./install.sh --zephyros-source-build
+    cd ../..
+    pwd
+
+    echo "[ZAPPS] moving required files to directory"
+    mkdir -p $AIROOTFS/usr/local/share/zephyr-apps/zephyr-theme-patcher
+    cp $TEMP_DIR/zephyr-theme-patcher/zephyr-theme-patcher $AIROOTFS/usr/local/share/zephyr-apps/zephyr-theme-patcher/zephyrthemepatcher
+    cp $TEMP_DIR/zephyr-theme-patcher/default.config.toml $AIROOTFS/usr/local/share/zephyr-apps/zephyr-theme-patcher/default.config.toml
+
+    echo "[ZAPPS] compilating zephyr-themes to directory"
+    mkdir -p $AIROOTFS/usr/local/share/zephyr-apps/zephyr-themes
+    sudo cp -r $TEMP_DIR/zephyr-themes/ $AIROOTFS/usr/local/share/zephyr-apps/
+    echo "[ZAPPS] zephyr apps compilated sucessfully"
+    
+}
+
 build_iso() {
     echo "Setting up Archiso Profile..."
 
@@ -81,10 +160,10 @@ build_iso() {
     sudo rm -rf $ISO_OUTPUT_DIR
     mkdir -p $ARCHISO_TEMP_DIR
     mkdir -p $ISO_OUTPUT_DIR
-
+    
     # run mkarchiso with our config
 
-    sudo mkarchiso -v -w "$ARCHISO_TEMP_DIR" -o "$ISO_OUTPUT_DIR" "$ARCHISO_PROFILE_DIR"
+    sudo mkarchiso -v -w "$ARCHISO_TEMP_DIR" -o "$ISO_OUTPUT_DIR" "$ARCHISO_PROFILE_DIR" -C "$ARCHISO_PROFILE_DIR/pacman.conf"
 
     echo "ISO file created in $ISO_OUTPUT_DIR/$(ls $ISO_OUTPUT_DIR/*.iso)"
 }
@@ -146,9 +225,11 @@ burn_iso_to_usb() {
     echo "Writing sucessfully completed!"
 }
 
-
-install_dependences_for_compilation
+remove_temp_dirs
+#install_dependences_for_compilation
+#build_kernel
 compile_calamares
+compile_zephyr_apps
 build_iso
 
 if [[ $# -eq 1 ]]; then
@@ -158,9 +239,7 @@ else
     echo
     echo "Not parameter in execution assigned"
     echo "skipping usb writing"
-    echo "ISO reeady in: $ISO_OUTPUT_DIR/"
-    ec[sudo] password for s7lver: 
-󰣇 ~/Projects/ZephyrOS   fix-bugs-1  !?⇡1 ❯                                                                                                              14:43 ho
+    echo "ISO reeady in: $ISO_OUTPUT_DIR/"                                                                                                              14:43 ho
 fi
 
 echo 'Process sucessfully completed! enjoy your system'

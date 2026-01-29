@@ -1,3 +1,4 @@
+# WARINING: BROKEN!
 # ZephyrOS
 Zephyr OS is an arch-based operative system designed for productivity and training
 
@@ -33,20 +34,25 @@ Check this out for the full note:
 <img src="https://readme-typing-svg.herokuapp.com?font=Lexend+Giga&size=25&pause=1000&color=CCA9DD&vCenter=true&width=435&height=25&lines=INSTALLATION" width="450"/>
 
 ---
+
+Tan solo tienes que quemar la iso en una usb, o cargarla en una maquina virtual.
+
 > [!IMPORTANT]
-> You will need to have an arch-based system, we recomment virtual machines
-
-run the following script for automated compilation
-
-```zsh
-./compile-v2.sh /dev/sda # Change this with the usb path without number, if you dont want to burn remove the parameter
-```
+> TODO
 ---
+
+moe themes
+volantes cursors
+sugar candy sddm
 
 
 # [TODO]
-- Add option for boot with copytoram or without it
-- Add more customization
-- Compress packages
-- Kernel optimizations
-- Theme patcher and theme installer
+
+- add option for boot with copytoram or without it
+- working on custom kernel
+
+# custom kernel
+
+pkgctl repo clone --protocol https linux
+
+updpkgsums
