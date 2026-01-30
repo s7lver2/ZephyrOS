@@ -155,6 +155,8 @@ compile_zephyr_apps() {
 build_iso() {
     echo "Setting up Archiso Profile..."
 
+    sudo cp -r archiso/pacman.conf $AIROOTFS/etc/pacman.conf
+
     # Cleaning earlier directories and creating new ones
     sudo rm -rf $ARCHISO_TEMP_DIR
     sudo rm -rf $ISO_OUTPUT_DIR
@@ -225,11 +227,11 @@ burn_iso_to_usb() {
     echo "Writing sucessfully completed!"
 }
 
-remove_temp_dirs
+#remove_temp_dirs
 #install_dependences_for_compilation
 #build_kernel
-compile_calamares
-compile_zephyr_apps
+#compile_calamares
+#compile_zephyr_apps
 build_iso
 
 if [[ $# -eq 1 ]]; then

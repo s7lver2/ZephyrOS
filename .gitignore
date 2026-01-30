@@ -27,3 +27,4 @@ calamares-python.mo
 /ZephyrOS
 /packages/x86_64/linux*
 /archiso/airootfs/usr/local/share/zephyr-apps/
+/archiso/airootfs/etc/pacman.conf
